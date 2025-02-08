@@ -11,6 +11,8 @@ import androidx.core.view.WindowInsetsCompat;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -23,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private HomeworkAdapter adapter;
-    private List<Homework> homeworkList;
+    private HomeworksViewModel homeworkList;
     private HomeworkRepository homeworkRepository;
 
     @Override
@@ -37,13 +39,21 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         homeworkRepository = new HomeworkRepository(this);
-        homeworkList = homeworkRepository.getAllHomework();
+        homeworkList = new ViewModelProvider(this).get(HomeworksViewModel.class);
+        List<Homework> homeworksFromDb = homeworkRepository.getAllHomework();
+        if(homeworksFromDb.size() > 0){
+            homeworkList.setHomeworks(homeworksFromDb);
+        }
         // Inicialización de componentes
         recyclerView = findViewById(R.id.recyclerView);
         FloatingActionButton fab = findViewById(R.id.fab);
-
+        System.out.println("fsadaw");
         // Crear y configurar el adaptador
-        adapter = new HomeworkAdapter(homeworkList, homework -> showBottomSheet(homework));
+        System.out.println(homeworkList.getHomeworks().getValue().size());
+        homeworkList.getHomeworks().observe(this, homeworkList -> {
+                adapter = new HomeworkAdapter(homeworkList, homework -> showBottomSheet(homework));
+            recyclerView.setAdapter(adapter);
+        });
 
         // Este código sería lo mismo que la anterior línea
         // adapter = new HomeworkAdapter(homeworkList, this::showBottomSheet);
@@ -55,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         // Configuración del RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        System.out.println("recycler");
 
         // Configuración del botón flotante
         fab.setOnClickListener(v -> showAddHomeworkDialog(null));
@@ -70,14 +81,18 @@ public class MainActivity extends AppCompatActivity {
             dialog.setArguments(args);
         }
         dialog.setOnHomeworkSavedListener(homework -> {
+                    List<Homework> homeworks = homeworkList.getHomeworks().getValue();
                     if (homeworkToEdit == null) {
-                        homeworkList.add(homework);
+                        System.out.println(homeworks.size());
+                        homeworks.add(homework);
+                        System.out.println(homeworks.size());
                         homeworkRepository.insertHomework(homework);
                         System.out.println(homeworkRepository.getAllHomework().size());
                     } else {
                         homeworkRepository.updateHomework(homeworkToEdit.getId(), homework);
-                        homeworkList.set(homeworkList.indexOf(homeworkToEdit), homework);
+                        homeworks.set(homeworks.indexOf(homeworkToEdit), homework);
                     }
+            homeworkList.setHomeworks(homeworks);
             adapter.notifyDataSetChanged();
                 });
         dialog.show(getSupportFragmentManager(), "AddHomeworkDialog");
@@ -135,7 +150,9 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Confirmar eliminación")
                 .setMessage("¿Estás seguro de que deseas eliminar este deber?")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
-                    homeworkList.remove(homework);
+                    List<Homework> homeworks = homeworkList.getHomeworks().getValue();
+                    homeworks.remove(homework);
+                    homeworkList.setHomeworks(homeworks);
                     homeworkRepository.deleteHomework(homework.getId());
                     adapter.notifyDataSetChanged();
                 })

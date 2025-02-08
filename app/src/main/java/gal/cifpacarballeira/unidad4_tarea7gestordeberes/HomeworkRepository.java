@@ -17,6 +17,7 @@ public class HomeworkRepository {
     }
 
     public long insertHomework(Homework homework) {
+        System.out.println(homework);
         SQLiteDatabase db = homeworkDB.getWritableDatabase();
         ContentValues values = homework.toContentValues();
         long result = db.insert("homeworks", null, homework.toContentValues());

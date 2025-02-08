@@ -30,6 +30,7 @@ public class HomeworkDB extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        sqLiteDatabase.execSQL("DROP table if exists homeworks");
+        sqLiteDatabase.execSQL("DROP table if exists " + TABLE_HOMEWORKS);
+        onCreate(sqLiteDatabase);
     }
 }

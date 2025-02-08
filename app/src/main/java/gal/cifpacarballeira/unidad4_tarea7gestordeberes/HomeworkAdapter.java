@@ -15,6 +15,7 @@ public class HomeworkAdapter extends RecyclerView.Adapter<HomeworkAdapter.Homewo
 
     // Constructor
     public HomeworkAdapter(List<Homework> homeworkList, OnHomeworkClickListener listener) {
+        System.out.println(homeworkList);
         this.homeworkList = homeworkList;
         this.listener = listener;
     }

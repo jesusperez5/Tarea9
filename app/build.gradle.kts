@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "gal.cifpacarballeira.unidad4_tarea7gestordeberes"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "gal.cifpacarballeira.unidad4_tarea7gestordeberes"
